@@ -1,5 +1,10 @@
 package org.example;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import org.apache.commons.imaging.ImageInfo;
 import org.apache.commons.imaging.Imaging;
 
@@ -8,9 +13,9 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.util.Scanner;
 
 public class ImageConverter {
     private static final double RESIZE_HEIGHT_OR_WIDTH = 9;
@@ -25,17 +30,33 @@ public class ImageConverter {
     }
 
     public static void main(String[] args) {
-        classType type = classType.BWLOGO;
-        String fileName = "png4.png";
-        String filePath = getInputFilePath(fileName);
-        String outputFleName = getOutputFileName(filePath);
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the file name:");
+        String fileName = scanner.nextLine();
+        System.out.println("Enter classType BWLOGO or COLOURLOGO:");
+        String classTypeStr = scanner.nextLine();
+        classType type = classType.valueOf(classTypeStr);
+
+        File file = new File(fileName);
+        String absolutePath = null;
+        if (file.exists() && type != null) {
+            absolutePath = file.getAbsolutePath();
+            System.out.println("Absolute path of input file: " + absolutePath);
+            System.out.println("Input classType: "+type.name());
+        } else {
+            System.out.println("File not found in the current directory.");
+            return;
+        }
+
+        assert absolutePath != null;
+        String outputFleName = getOutputFileName(absolutePath);
 
         try {
             // Read the input image
-            BufferedImage inputImage = ImageIO.read(new File(filePath));
-            int dpi = getImageDpi(filePath);
+            BufferedImage inputImage = ImageIO.read(new File(absolutePath));
+            int dpi = getImageDpi(absolutePath);
             if (dpi < 0) {
-                throw new RuntimeException("Error occurred while converting the image");
+                throw new RuntimeException("Image DPI is missing in the metadata");
             }
             if (isResizeNeeded(inputImage, dpi)) {
                 BufferedImage outputImage = convertImage(inputImage, type);
@@ -46,6 +67,7 @@ public class ImageConverter {
                 System.out.println("Image converted successfully.");
             } else {
                 System.out.println("No resize is necessary");
+                saveImage(inputImage, outputFleName);
             }
 
         } catch (IOException e) {
