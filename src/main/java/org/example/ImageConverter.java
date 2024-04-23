@@ -14,7 +14,7 @@ import java.util.Scanner;
 class ImageConverter {
     private static final double RESIZE_HEIGHT_OR_WIDTH = 9.03;
     private static final double LOGO_DPI = 266;
-    private static final int MAX_ALLOWED_SIZE = 20 ;
+    private static final int MAX_ALLOWED_SIZE = 20;
     private static final double ONE_INCH_TO_CENTIMETER  = 2.54;
     private static String CONVERSION_FORMAT_TIFF = "tiff";
 
@@ -31,7 +31,12 @@ class ImageConverter {
         String classTypeStr = scanner.nextLine();
         System.out.println("Enter only one image format as jpg, png, bmp, gif, tiff:");
         CONVERSION_FORMAT_TIFF = scanner.nextLine();
-        classType type = classType.valueOf(classTypeStr);
+        classType type = null;
+        if(classTypeStr.equalsIgnoreCase("c")){
+            type = classType.COLOURLOGO;
+        }else if(classTypeStr.equalsIgnoreCase("b")){
+            type = classType.BWLOGO;
+        }
 
         File file = new File(fileName);
         String absolutePath = null;
