@@ -1,28 +1,21 @@
 package org.example;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifIFD0Directory;
 import org.apache.commons.imaging.ImageInfo;
 import org.apache.commons.imaging.Imaging;
 
 import javax.imageio.ImageIO;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.Scanner;
 
-public class ImageConverter {
-    private static final double RESIZE_HEIGHT_OR_WIDTH = 9;
-    private static final double LOGO_DPI = 266.8;
-    private static final int REQUIRED_MAX_SIZE = 20 ;
+class ImageConverter {
+    private static final double RESIZE_HEIGHT_OR_WIDTH = 9.03;
+    private static final double LOGO_DPI = 266;
+    private static final int MAX_ALLOWED_SIZE = 20 ;
     private static final double ONE_INCH_TO_CENTIMETER  = 2.54;
-    private static final String CONVERSION_FORMAT_TIFF = "TIFF";
+    private static final String CONVERSION_FORMAT_TIFF = "tiff";
 
     public enum classType {
         BWLOGO,
@@ -76,9 +69,13 @@ public class ImageConverter {
     }
 
     private static boolean isResizeNeeded(BufferedImage inputImage, int dpi) {
-        double widthCm = pixelsToCm(dpi, inputImage.getWidth());
-        double heightCm = pixelsToCm(dpi, inputImage.getHeight());
-        return widthCm > REQUIRED_MAX_SIZE || heightCm > REQUIRED_MAX_SIZE;
+        int widthInPixels = inputImage.getWidth();
+        int heightInPixels = inputImage.getHeight();
+        double centimetersWidth = widthInPixels * ONE_INCH_TO_CENTIMETER / dpi;
+        double centimetersHeight = heightInPixels * ONE_INCH_TO_CENTIMETER / dpi;
+        System.out.println("Current width: " + centimetersWidth + " cm");
+        System.out.println("Current height: " + centimetersHeight + " cm");
+        return centimetersWidth > MAX_ALLOWED_SIZE || centimetersHeight > MAX_ALLOWED_SIZE;
     }
 
     private static void saveImage(BufferedImage image, String outputFileName) throws IOException {
@@ -91,7 +88,6 @@ public class ImageConverter {
         URL resourceUrl = ImageConverter.class.getClassLoader().getResource(fileName);
         String filePath = null;
         if (resourceUrl != null) {
-            // Get the file path from the URL
             filePath = resourceUrl.getPath();
             System.out.println("Input file path: " + filePath);
         } else {
@@ -102,7 +98,7 @@ public class ImageConverter {
     private static String getOutputFileName(String filePath){
         int lastIndexOfSlash = filePath.lastIndexOf('/');
         String inputFileName = filePath.substring(lastIndexOfSlash + 1);
-        return inputFileName.replaceAll("\\.[^.]*$", "") + ".tiff";
+        return inputFileName.replaceAll("\\.[^.]*$", "") + "."+CONVERSION_FORMAT_TIFF;
     }
 
     private static int getImageDpi(String filePath){
@@ -128,7 +124,7 @@ public class ImageConverter {
     }
 
     private static BufferedImage convertImage(BufferedImage inputImage, classType type) {
-        int desiredWidth = cmToPixels();
+        int desiredWidth =  cmToPixels();
         int desiredHeight = cmToPixels();
 
         if (type == classType.COLOURLOGO) {
@@ -147,12 +143,13 @@ public class ImageConverter {
             g2d.drawImage(resizedImage, 0, 0, desiredWidth, desiredHeight, null);
             g2d.dispose();
             return outputImage;
-        } else {
-            return null;
-        }
+    } else {
+        return null;
     }
-    private static int cmToPixels() {
-        return (int) (RESIZE_HEIGHT_OR_WIDTH * LOGO_DPI / ONE_INCH_TO_CENTIMETER);
-    }
+}
+private static int cmToPixels() {
+    return (int) (RESIZE_HEIGHT_OR_WIDTH * LOGO_DPI / ONE_INCH_TO_CENTIMETER);
+}
+
 }
 
