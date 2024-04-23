@@ -9,13 +9,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Scanner;
 
 class ImageConverter {
     private static final double RESIZE_HEIGHT_OR_WIDTH = 9.03;
     private static final double LOGO_DPI = 266;
     private static final int MAX_ALLOWED_SIZE = 20 ;
     private static final double ONE_INCH_TO_CENTIMETER  = 2.54;
-    private static final String CONVERSION_FORMAT_TIFF = "tiff";
+    private static String CONVERSION_FORMAT_TIFF = "tiff";
 
     public enum classType {
         BWLOGO,
@@ -28,6 +29,8 @@ class ImageConverter {
         String fileName = scanner.nextLine();
         System.out.println("Enter classType BWLOGO or COLOURLOGO:");
         String classTypeStr = scanner.nextLine();
+        System.out.println("Enter only one image format as jpg, png, bmp, gif, tiff:");
+        CONVERSION_FORMAT_TIFF = scanner.nextLine();
         classType type = classType.valueOf(classTypeStr);
 
         File file = new File(fileName);
